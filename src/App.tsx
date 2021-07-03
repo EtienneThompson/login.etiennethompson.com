@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Toolbar } from "./components/common/Toolbar";
 import { Row, Col } from "./components/common/Grid";
 import { Button } from "./components/common/Button";
 import { loginUser } from "./api";
@@ -23,6 +24,7 @@ function App() {
 
   return (
     <div className="App">
+      <Toolbar />
       <Row>
         <Col>
           <div className="card">
