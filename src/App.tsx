@@ -1,24 +1,58 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.scss';
+import React, { useState } from "react";
+import { Row, Col } from "./components/common/Grid";
+import { Button } from "./components/common/Button";
+import { loginUser } from "./api";
+import "./App.scss";
 
 function App() {
+  document.title = "Login - Etienne Thompson";
+  document.documentElement.className = "theme-light";
+
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+
+  const onUsernameChange = (
+    event: React.FormEvent<HTMLInputElement>
+  ): void => {
+    setUsername(event.currentTarget.value);
+  };
+
+  const onPasswordChange = (event: React.FormEvent<HTMLInputElement>) => {
+    setPassword(event.currentTarget.value);
+  };
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <Row>
+        <Col>
+          <div className="card">
+            <Row>
+              <h1>Login</h1>
+            </Row>
+            <Row>
+              <input
+                type="text"
+                value={username}
+                placeholder="username"
+                onChange={onUsernameChange}
+              ></input>
+            </Row>
+            <Row>
+              <input
+                type="text"
+                value={password}
+                placeholder="password"
+                onChange={onPasswordChange}
+              ></input>
+            </Row>
+            <Row>
+              <Button onClick={() => loginUser(username, password)}>
+                Submit
+              </Button>
+            </Row>
+          </div>
+        </Col>
+      </Row>
     </div>
   );
 }
