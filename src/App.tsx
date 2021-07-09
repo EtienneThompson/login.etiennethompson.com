@@ -1,16 +1,18 @@
-import React, { useState } from "react";
+import React from "react";
+import queryString from "query-string";
 import { Toolbar } from "./components/common/Toolbar";
 import { Row, Col } from "./components/common/Grid";
 import { Button } from "./components/common/Button";
 import { loginUser } from "./api";
 import "./App.scss";
 
-function App() {
+const App = () => {
   document.title = "Login - Etienne Thompson";
   document.documentElement.className = "theme-light";
 
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [username, setUsername] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const [appid, setAppid] = React.useState("");
 
   const onUsernameChange = (
     event: React.FormEvent<HTMLInputElement>
@@ -21,6 +23,16 @@ function App() {
   const onPasswordChange = (event: React.FormEvent<HTMLInputElement>) => {
     setPassword(event.currentTarget.value);
   };
+
+  React.useEffect(() => {
+    let params = queryString.parse(window.location.search.substring(1));
+    let appid = params.appid
+      ? Array.isArray(params.appid)
+        ? params.appid[0]
+        : params.appid
+      : "";
+    setAppid(appid);
+  }, []);
 
   return (
     <div className="App">
@@ -48,7 +60,7 @@ function App() {
               ></input>
             </Row>
             <Row>
-              <Button onClick={() => loginUser(username, password)}>
+              <Button onClick={() => loginUser(username, password, appid)}>
                 Submit
               </Button>
             </Row>
@@ -57,6 +69,6 @@ function App() {
       </Row>
     </div>
   );
-}
+};
 
 export default App;

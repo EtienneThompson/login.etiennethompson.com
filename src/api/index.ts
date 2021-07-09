@@ -3,7 +3,8 @@ import { LoginRequest } from "./types";
 
 export const loginUser = async (
   username: string,
-  password: string
+  password: string,
+  appid: string
 ): Promise<void> => {
   console.log("loginUser");
   const hashedPassword = hashString(password);
@@ -12,6 +13,7 @@ export const loginUser = async (
   const loginRequest: LoginRequest = {
     username: username,
     hashedPassword: hashedPassword,
+    appid: appid,
   };
 
   const response = await fetch("http://localhost:3600/login", {
