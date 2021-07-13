@@ -1,0 +1,11 @@
+@import "../../../assets/styles/colors.scss";
+
+.button-container {
+    width: auto;
+    height: auto;
+    padding: 5px;
+    background-color: var(--secondary);
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+}
