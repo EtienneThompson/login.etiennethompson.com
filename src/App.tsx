@@ -11,26 +11,32 @@ import { LoginStatus, LoginStore } from "./store/types";
 import { LoginResponse } from "./api/types";
 
 const App = () => {
+  // Set title and theme.
   document.title = "Login - Etienne Thompson";
   document.documentElement.className = "theme-light";
 
+  // User input state.
   const [username, setUsername] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [appid, setAppid] = React.useState("");
 
+  // Login system state.
   const isLoggingIn = useSelector((state: LoginStore) => state.isLoggingIn);
   const loginStatus = useSelector((state: LoginStore) => state.loginStatus);
 
+  // Update the username state.
   const onUsernameChange = (
     event: React.FormEvent<HTMLInputElement>
   ): void => {
     setUsername(event.currentTarget.value);
   };
 
+  // Update the password state.
   const onPasswordChange = (event: React.FormEvent<HTMLInputElement>) => {
     setPassword(event.currentTarget.value);
   };
 
+  // Login a user and redirect them back to their application.
   const handleLogin = async (
     username: string,
     password: string,
@@ -58,6 +64,7 @@ const App = () => {
     window.open(redirectTo, "_self");
   };
 
+  // Parse the query on login to get the application id.
   React.useEffect(() => {
     let params = queryString.parse(window.location.search.substring(1));
     let appid = params.appid
@@ -75,11 +82,13 @@ const App = () => {
         <Col>
           <div className="card">
             {!isLoggingIn ? (
+              /* Login form if the system is not logging in.*/
               <div>
                 <Row>
                   <h1>Login</h1>
                 </Row>
                 {loginStatus === LoginStatus.Failed && (
+                  /* Error component if login was unsucessful. */
                   <div className="error">Could not login.</div>
                 )}
                 <Row>
@@ -109,6 +118,7 @@ const App = () => {
                 </Row>
               </div>
             ) : (
+              /* Spinner if the system is logging in. */
               <div>
                 <LoadingSpinner />
               </div>

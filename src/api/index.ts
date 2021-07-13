@@ -9,10 +9,8 @@ export const loginUser = async (
   password: string,
   appid: string
 ): Promise<LoginResponse> => {
-  console.log("loginUser");
   store.dispatch(login());
   const hashedPassword = hashString(password);
-  console.log(hashedPassword);
 
   const loginRequest: LoginRequest = {
     username: username,
