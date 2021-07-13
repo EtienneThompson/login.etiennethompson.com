@@ -3,3 +3,8 @@ export type LoginRequest = {
   hashedPassword: string;
   appid: string;
 };
+
+export type LoginResponse = {
+  clientId: string;
+  redirectUrl: string;
+};

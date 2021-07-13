@@ -1,12 +1,16 @@
 import { hashString } from "../utils/hash";
-import { LoginRequest } from "./types";
+import { LoginRequest, LoginResponse } from "./types";
+import { store } from "../store/store";
+import { finishedLogin, login, updateLoginStatus } from "../store/actions";
+import { LoginStatus } from "../store/types";
 
 export const loginUser = async (
   username: string,
   password: string,
   appid: string
-): Promise<void> => {
+): Promise<LoginResponse> => {
   console.log("loginUser");
+  store.dispatch(login());
   const hashedPassword = hashString(password);
   console.log(hashedPassword);
 
@@ -24,7 +28,19 @@ export const loginUser = async (
     body: JSON.stringify(loginRequest),
   });
 
-  console.log(await response.json());
+  const loginResponse: LoginResponse = await response.json();
 
-  console.log("login api called.");
+  if (
+    !loginResponse ||
+    !loginResponse.clientId ||
+    !loginResponse.redirectUrl
+  ) {
+    store.dispatch(updateLoginStatus(LoginStatus.Failed));
+  } else {
+    store.dispatch(updateLoginStatus(LoginStatus.Success));
+  }
+
+  store.dispatch(finishedLogin());
+
+  return loginResponse;
 };
