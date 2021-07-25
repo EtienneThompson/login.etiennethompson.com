@@ -101,7 +101,7 @@ const App = () => {
                 </Row>
                 <Row>
                   <input
-                    type="text"
+                    type="password"
                     value={password}
                     placeholder="password"
                     onChange={onPasswordChange}
