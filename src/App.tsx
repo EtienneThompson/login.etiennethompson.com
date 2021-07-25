@@ -1,14 +1,14 @@
 import React from "react";
+import { useSelector } from "react-redux";
 import queryString from "query-string";
+import { loginUser } from "./api";
+import { LoginResponse } from "./api/types";
 import { Toolbar } from "./components/common/Toolbar";
 import { Row, Col } from "./components/common/Grid";
 import { Button } from "./components/common/Button";
 import { LoadingSpinner } from "./components/common/LoadingSpinner";
-import { loginUser } from "./api";
-import "./App.scss";
-import { useSelector } from "react-redux";
 import { LoginStatus, LoginStore } from "./store/types";
-import { LoginResponse } from "./api/types";
+import "./App.scss";
 
 const App = () => {
   // Set title and theme.
@@ -42,6 +42,7 @@ const App = () => {
     password: string,
     appid: string
   ): Promise<void> => {
+    console.log("hello?");
     const loginResponse: LoginResponse = await loginUser(
       username,
       password,
@@ -56,12 +57,17 @@ const App = () => {
       return;
     }
     const queryChar = loginResponse.redirectUrl.indexOf("?") > -1 ? "&" : "?";
+    // Create the new redirect url.
     const redirectTo =
       loginResponse.redirectUrl +
       queryChar +
       "clientId=" +
       loginResponse.clientId;
-    window.open(redirectTo, "_self");
+    // Open the link and focus to it.
+    const win = window.open(redirectTo, "_self");
+    if (win) {
+      win.focus();
+    }
   };
 
   // Parse the query on login to get the application id.
@@ -95,7 +101,7 @@ const App = () => {
                   <input
                     type="text"
                     value={username}
-                    placeholder="username"
+                    placeholder="Username"
                     onChange={onUsernameChange}
                   ></input>
                 </Row>
@@ -103,7 +109,7 @@ const App = () => {
                   <input
                     type="password"
                     value={password}
-                    placeholder="password"
+                    placeholder="Password"
                     onChange={onPasswordChange}
                   ></input>
                 </Row>
