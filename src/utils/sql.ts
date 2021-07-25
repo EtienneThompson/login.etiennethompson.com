@@ -3,8 +3,6 @@ const SqlFields = /\*|username|password|hashedPassword|appid/gi;
 const SqlComments = /#|--/gi;
 const SqlOthers = /into|values|from|;/gi;
 
-// etienne--
-
 export const scrapeSqlInjection = (
   username: string,
   password: string,

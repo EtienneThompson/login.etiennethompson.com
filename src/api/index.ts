@@ -11,9 +11,6 @@ export const loginUser = async (
   appid: string
 ): Promise<LoginResponse> => {
   store.dispatch(login());
-  console.log(username);
-  console.log(password);
-  console.log(appid);
   // Scrape input username and password for SQL Injection attacks.
   const [scrapedUsername, scrapedPassword, scrapedAppid] = scrapeSqlInjection(
     username,
@@ -22,10 +19,6 @@ export const loginUser = async (
   );
   // Hash the password for protection.
   const hashedPassword = hashString(scrapedPassword);
-
-  console.log(scrapedUsername);
-  console.log(scrapedPassword);
-  console.log(scrapedAppid);
 
   const loginRequest: LoginRequest = {
     username: scrapedUsername,
