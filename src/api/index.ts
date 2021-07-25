@@ -1,4 +1,5 @@
 import { hashString } from "../utils/hash";
+import { scrapeSqlInjection } from "../utils/sql";
 import { LoginRequest, LoginResponse } from "./types";
 import { store } from "../store/store";
 import { finishedLogin, login, updateLoginStatus } from "../store/actions";
@@ -10,14 +11,29 @@ export const loginUser = async (
   appid: string
 ): Promise<LoginResponse> => {
   store.dispatch(login());
-  const hashedPassword = hashString(password);
+  console.log(username);
+  console.log(password);
+  console.log(appid);
+  // Scrape input username and password for SQL Injection attacks.
+  const [scrapedUsername, scrapedPassword, scrapedAppid] = scrapeSqlInjection(
+    username,
+    password,
+    appid
+  );
+  // Hash the password for protection.
+  const hashedPassword = hashString(scrapedPassword);
+
+  console.log(scrapedUsername);
+  console.log(scrapedPassword);
+  console.log(scrapedAppid);
 
   const loginRequest: LoginRequest = {
-    username: username,
+    username: scrapedUsername,
     hashedPassword: hashedPassword,
-    appid: appid,
+    appid: scrapedAppid,
   };
 
+  // Send the request to the api.
   const response = await fetch("http://localhost:3600/login", {
     headers: {
       "Content-Type": "application/json",
@@ -28,6 +44,7 @@ export const loginUser = async (
 
   const loginResponse: LoginResponse = await response.json();
 
+  // Validate response.
   if (
     !loginResponse ||
     !loginResponse.clientId ||
