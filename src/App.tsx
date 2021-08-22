@@ -42,7 +42,6 @@ const App = () => {
     password: string,
     appid: string
   ): Promise<void> => {
-    console.log("hello?");
     const loginResponse: LoginResponse = await loginUser(
       username,
       password,
@@ -62,7 +61,11 @@ const App = () => {
       loginResponse.redirectUrl +
       queryChar +
       "clientId=" +
-      loginResponse.clientId;
+      loginResponse.clientId +
+      "&isUser=" +
+      loginResponse.isUser +
+      "&isAdmin=" +
+      loginResponse.isAdmin;
     // Open the link and focus to it.
     const win = window.open(redirectTo, "_self");
     if (win) {
