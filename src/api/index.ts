@@ -28,8 +28,7 @@ export const loginUser = async (
 
   // Send the request to the api.
   const response = await fetch(
-    "http://localhost:3600/login",
-    //"https://api-etiennethompson.herokuapp.com/login",
+    "https://api-etiennethompson.herokuapp.com/login",
     {
       headers: {
         "Content-Type": "application/json",
