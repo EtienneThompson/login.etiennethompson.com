@@ -7,4 +7,6 @@ export type LoginRequest = {
 export type LoginResponse = {
   clientId: string;
   redirectUrl: string;
+  isUser: boolean;
+  isAdmin: boolean;
 };
