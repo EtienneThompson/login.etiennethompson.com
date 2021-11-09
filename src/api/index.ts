@@ -8,15 +8,13 @@ import { LoginStatus } from "../store/types";
 export const loginUser = async (
   username: string,
   password: string,
-  appid: string
+  appid: string,
+  redirectBase: string
 ): Promise<LoginResponse> => {
   store.dispatch(login());
   // Scrape input username and password for SQL Injection attacks.
-  const [scrapedUsername, scrapedPassword, scrapedAppid] = scrapeSqlInjection(
-    username,
-    password,
-    appid
-  );
+  const [scrapedUsername, scrapedPassword, scrapedAppid, scrapedRedirectBase] =
+    scrapeSqlInjection(username, password, appid, redirectBase);
   // Hash the password for protection.
   const hashedPassword = hashString(scrapedPassword);
 
@@ -24,6 +22,7 @@ export const loginUser = async (
     username: scrapedUsername,
     hashedPassword: hashedPassword,
     appid: scrapedAppid,
+    redirectBase: scrapedRedirectBase,
   };
 
   // Send the request to the api.
