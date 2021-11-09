@@ -111,7 +111,7 @@ dist
 # misc
 .DS_Store
 # dotenv environment variables file
-.env
+.env*
 .env.test
 .env.local
 .env.development.local
