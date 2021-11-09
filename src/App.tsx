@@ -19,6 +19,7 @@ const App = () => {
   const [username, setUsername] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [appid, setAppid] = React.useState("");
+  const [redirectBase, setRedirectBase] = React.useState("");
 
   // Login system state.
   const isLoggingIn = useSelector((state: LoginStore) => state.isLoggingIn);
@@ -40,12 +41,14 @@ const App = () => {
   const handleLogin = async (
     username: string,
     password: string,
-    appid: string
+    appid: string,
+    redirectBase: string
   ): Promise<void> => {
     const loginResponse: LoginResponse = await loginUser(
       username,
       password,
-      appid
+      appid,
+      redirectBase
     );
 
     if (
@@ -81,7 +84,13 @@ const App = () => {
         ? params.appid[0]
         : params.appid
       : "";
+    let redirectBase = params.redirectBase
+      ? Array.isArray(params.redirectBase)
+        ? params.redirectBase[0]
+        : params.redirectBase
+      : "";
     setAppid(appid);
+    setRedirectBase(redirectBase);
   }, []);
 
   return (
@@ -119,7 +128,12 @@ const App = () => {
                 <Row>
                   <Button
                     onClick={async () =>
-                      await handleLogin(username, password, appid)
+                      await handleLogin(
+                        username,
+                        password,
+                        appid,
+                        redirectBase
+                      )
                     }
                   >
                     Submit

@@ -6,8 +6,9 @@ const SqlOthers = /into|values|from|;/gi;
 export const scrapeSqlInjection = (
   username: string,
   password: string,
-  appid: string
-): [string, string, string] => {
+  appid: string,
+  redirectBase: string
+): [string, string, string, string] => {
   let scrapedUsername = username.replace(SqlCommands, "");
   scrapedUsername = scrapedUsername.replace(SqlFields, "");
   scrapedUsername = scrapedUsername.replace(SqlComments, "");
@@ -23,5 +24,10 @@ export const scrapeSqlInjection = (
   scrapedAppid = scrapedAppid.replace(SqlComments, "");
   scrapedAppid = scrapedAppid.replace(SqlOthers, "");
 
-  return [scrapedUsername, scrapedPassword, scrapedAppid];
+  let scrapedRedirectBase = redirectBase.replace(SqlCommands, "");
+  scrapedRedirectBase = scrapedRedirectBase.replace(SqlFields, "");
+  scrapedRedirectBase = scrapedRedirectBase.replace(SqlComments, "");
+  scrapedRedirectBase = scrapedRedirectBase.replace(SqlOthers, "");
+
+  return [scrapedUsername, scrapedPassword, scrapedAppid, scrapedRedirectBase];
 };
