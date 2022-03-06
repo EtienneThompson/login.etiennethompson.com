@@ -84,11 +84,15 @@ const App = () => {
     let appid = params.appid
       ? Array.isArray(params.appid)
         ? params.appid[0]
+          ? params.appid[0]
+          : ""
         : params.appid
       : "";
     let redirectBase = params.redirectBase
       ? Array.isArray(params.redirectBase)
         ? params.redirectBase[0]
+          ? params.redirectBase[0]
+          : ""
         : params.redirectBase
       : "";
     setAppid(appid);
