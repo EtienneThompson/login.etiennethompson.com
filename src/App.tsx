@@ -21,6 +21,8 @@ const App = () => {
   const [appid, setAppid] = React.useState("");
   const [redirectBase, setRedirectBase] = React.useState("");
 
+  const btnRef = React.useRef<any>();
+
   // Login system state.
   const isLoggingIn = useSelector((state: LoginStore) => state.isLoggingIn);
   const loginStatus = useSelector((state: LoginStore) => state.loginStatus);
@@ -93,6 +95,12 @@ const App = () => {
     setRedirectBase(redirectBase);
   }, []);
 
+  React.useEffect(() => {
+    if (btnRef && btnRef.current) {
+      btnRef.current.focus();
+    }
+  }, [btnRef]);
+
   return (
     <div className="App">
       <Toolbar />
@@ -127,6 +135,7 @@ const App = () => {
                 </Row>
                 <Row>
                   <Button
+                    ref={btnRef}
                     onClick={async () =>
                       await handleLogin(
                         username,
