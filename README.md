@@ -11,7 +11,7 @@ Access is defined by users having:
 
 These access rules allow finer control over who can access what applications within the ecosystem, rather than just blindly granting all users access to all applications.
 
-# Getting Started with the application
+# Getting started with the application
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
