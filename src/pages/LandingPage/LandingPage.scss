@@ -1,0 +1,10 @@
+@import "../../assets/styles/colors.scss";
+
+.landing-page-container {
+    display: flex;
+    width: 100%;
+    height: calc(100vh - 50px);
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}

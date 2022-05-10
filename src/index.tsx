@@ -1,14 +1,26 @@
 import React from "react";
 import ReactDOM from "react-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Provider } from "react-redux";
+import { Login } from "./pages/Login";
+import { Error404 } from "./pages/404Error";
 import { store } from "./store/store";
 import "./index.scss";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
+import { LandingPage } from "./pages/LandingPage";
 
 ReactDOM.render(
   <Provider store={store}>
-    <App />
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<App />}>
+          <Route path="" element={<LandingPage />} />
+          <Route path="login" element={<Login />} />
+          <Route path="*" element={<Error404 />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   </Provider>,
   document.getElementById("root")
 );
