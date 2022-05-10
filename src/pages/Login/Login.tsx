@@ -2,7 +2,6 @@ import React from "react";
 import { useSelector } from "react-redux";
 import { Button } from "../../components/common/Button";
 import { Row, Col } from "../../components/common/Grid";
-import { Toolbar } from "../../components/common/Toolbar";
 import { LoadingSpinner } from "../../components/common/LoadingSpinner";
 import { loginUser } from "../../api";
 import { LoginResponse } from "../../api/types";
