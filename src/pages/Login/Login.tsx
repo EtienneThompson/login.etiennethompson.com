@@ -12,7 +12,7 @@ import "./Login.scss";
 
 export const Login = () => {
   // Set title and theme.
-  document.title = "Login - Etienne Thompson";
+  document.title = "Etienne Thompson - OAuth Login - Login";
   document.documentElement.className = "theme-light";
 
   // User input state.

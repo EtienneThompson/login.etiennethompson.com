@@ -6,7 +6,7 @@ import "./404Error.scss";
 export const Error404: React.FunctionComponent<Error404Props> = (
   props: Error404Props
 ) => {
-  document.title = "Etienne Thompson - Admin Center";
+  document.title = "Etienne Thompson - OAuth Login - 404 Not Found";
   document.documentElement.className = "theme-light";
 
   return (
