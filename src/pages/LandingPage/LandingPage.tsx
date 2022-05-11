@@ -3,7 +3,7 @@ import { Row, Col } from "../../components/common/Grid";
 import "./LandingPage.scss";
 
 export const LandingPage = () => {
-  document.title = "Etienne Thompson - Admin Center";
+  document.title = "Etienne Thompson - OAuth Login - Home";
   document.documentElement.className = "theme-light";
 
   return (
