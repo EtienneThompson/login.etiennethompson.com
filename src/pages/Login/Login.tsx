@@ -121,23 +121,32 @@ export const Login = () => {
                   <div className="error">Could not login.</div>
                 )}
                 <Row>
-                  <input
-                    type="text"
-                    value={username}
-                    placeholder="Username"
-                    onChange={onUsernameChange}
-                  ></input>
+                  <Col align="start">
+                    <div className="input-label">Username</div>
+                    <input
+                      className="input-text"
+                      type="text"
+                      value={username}
+                      placeholder="Username"
+                      onChange={onUsernameChange}
+                    ></input>
+                  </Col>
                 </Row>
                 <Row>
-                  <input
-                    type="password"
-                    value={password}
-                    placeholder="Password"
-                    onChange={onPasswordChange}
-                  ></input>
+                  <Col align="start">
+                    <div className="input-label">Password</div>
+                    <input
+                      className="input-text"
+                      type="password"
+                      value={password}
+                      placeholder="Password"
+                      onChange={onPasswordChange}
+                    ></input>
+                  </Col>
                 </Row>
                 <Row>
                   <Button
+                    className="large-button"
                     ref={btnRef}
                     onClick={async () =>
                       await handleLogin(

@@ -8,7 +8,7 @@ export const Button = React.forwardRef<HTMLDivElement, ButtonProps>(
     return (
       <div
         tabIndex={0}
-        className="button-container"
+        className={`button-container ${props.className}`}
         ref={ref}
         onClick={props.onClick}
         onKeyDown={(e) =>
