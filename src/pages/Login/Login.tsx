@@ -127,7 +127,6 @@ export const Login = () => {
                       className="input-text"
                       type="text"
                       value={username}
-                      placeholder="Username"
                       onChange={onUsernameChange}
                     ></input>
                   </Col>
@@ -139,10 +138,14 @@ export const Login = () => {
                       className="input-text"
                       type="password"
                       value={password}
-                      placeholder="Password"
                       onChange={onPasswordChange}
                     ></input>
                   </Col>
+                </Row>
+                <Row justify="end">
+                  <a href="/reset_password" className="forgot-password-link">
+                    Forgot your password?
+                  </a>
                 </Row>
                 <Row>
                   <Button

@@ -4,7 +4,10 @@ import "./Row.scss";
 
 export const Row: FunctionComponent<RowProps> = (props: RowProps) => {
   return (
-    <div className="row-container" style={{ justifyContent: props.justify }}>
+    <div
+      className={`row-container ${props.className}`}
+      style={{ justifyContent: props.justify }}
+    >
       {props.children}
     </div>
   );
