@@ -1,28 +1,23 @@
 import React from "react";
 import { Button } from "../../components/common/Button";
 import { Row, Col, Container } from "../../components/common/Grid";
-import "./ResetPassword.scss";
+import "./EnterEmail.scss";
 
-export const ResetPassword = () => {
-  document.title = "Etienne Thompson - OAuth Login - Reset Password";
+export const EnterEmail = () => {
+  document.title = "Etienne Thompson - OAuth Login - Enter Email";
   document.documentElement.className = "theme-light";
 
   return (
-    <Container className="reset-password-container">
+    <Container className="enter-email-container">
       <div className="card">
         <Col>
           <Row className="reset-notice-message">
-            Enter a new password for your account.
+            You've requested to reset your password. Enter the email associated
+            with your account.
           </Row>
           <Row>
             <Col align="start">
-              <div className="input-label">New Password:</div>
-              <input className="input-text" type="text" />
-            </Col>
-          </Row>
-          <Row>
-            <Col align="start">
-              <div className="input-label">Confirm New Password:</div>
+              <div className="input-label">Enter your email:</div>
               <input className="input-text" type="text" />
             </Col>
           </Row>

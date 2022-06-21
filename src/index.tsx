@@ -9,6 +9,7 @@ import "./index.scss";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { LandingPage } from "./pages/LandingPage";
+import { EnterEmail } from "./pages/EnterEmail";
 import { ResetPassword } from "./pages/ResetPassword";
 
 ReactDOM.render(
@@ -18,6 +19,7 @@ ReactDOM.render(
         <Route path="/" element={<App />}>
           <Route path="" element={<LandingPage />} />
           <Route path="login" element={<Login />} />
+          <Route path="enter_email" element={<EnterEmail />} />
           <Route path="reset_password" element={<ResetPassword />} />
           <Route path="*" element={<Error404 />} />
         </Route>
