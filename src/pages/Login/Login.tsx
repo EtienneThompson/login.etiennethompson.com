@@ -1,5 +1,6 @@
 import React from "react";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router";
 import { Button } from "../../components/common/Button";
 import { Row, Col } from "../../components/common/Grid";
 import { LoadingSpinner } from "../../components/common/LoadingSpinner";
@@ -9,11 +10,18 @@ import { LoginStore } from "../../store/types";
 import { LoginStatus } from "../../store/types";
 import queryString from "query-string";
 import "./Login.scss";
+import {
+  deleteFromLocalStorage,
+  writeToLocalStorage,
+} from "../../utils/localStorage";
+import { LocalStorageKey } from "../../types";
 
 export const Login = () => {
   // Set title and theme.
   document.title = "Etienne Thompson - OAuth Login - Login";
   document.documentElement.className = "theme-light";
+
+  const navigate = useNavigate();
 
   // User input state.
   const [username, setUsername] = React.useState("");
@@ -78,6 +86,12 @@ export const Login = () => {
     }
   };
 
+  const onResetPasswordLinkClicked = () => {
+    writeToLocalStorage(LocalStorageKey.CurrentAppId, appid);
+    writeToLocalStorage(LocalStorageKey.CurrentRedirectBase, redirectBase);
+    navigate("/enter_email");
+  };
+
   // Parse the query on login to get the application id.
   React.useEffect(() => {
     let params = queryString.parse(window.location.search.substring(1));
@@ -97,6 +111,10 @@ export const Login = () => {
       : "";
     setAppid(appid);
     setRedirectBase(redirectBase);
+
+    // Remove any stored app id for resetting a password.
+    deleteFromLocalStorage(LocalStorageKey.CurrentAppId);
+    deleteFromLocalStorage(LocalStorageKey.CurrentRedirectBase);
   }, []);
 
   React.useEffect(() => {
@@ -127,7 +145,6 @@ export const Login = () => {
                       className="input-text"
                       type="text"
                       value={username}
-                      placeholder="Username"
                       onChange={onUsernameChange}
                     ></input>
                   </Col>
@@ -139,10 +156,17 @@ export const Login = () => {
                       className="input-text"
                       type="password"
                       value={password}
-                      placeholder="Password"
                       onChange={onPasswordChange}
                     ></input>
                   </Col>
+                </Row>
+                <Row justify="end">
+                  <div
+                    onClick={onResetPasswordLinkClicked}
+                    className="forgot-password-link"
+                  >
+                    Forgot your password?
+                  </div>
                 </Row>
                 <Row>
                   <Button

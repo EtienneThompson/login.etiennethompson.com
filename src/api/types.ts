@@ -11,3 +11,8 @@ export type LoginResponse = {
   isUser: boolean;
   isAdmin: boolean;
 };
+
+export type BaseResponse = {
+  code: number;
+  message: string;
+};
