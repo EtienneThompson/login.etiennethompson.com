@@ -71,8 +71,9 @@ export const ResetPassword = () => {
       return;
     }
 
-    sendUpdatedPassword(resetCode, hashString(newPassword))
-      .then((response) => setPasswordResetSuccess(true))
+    hashString(newPassword)
+      .then((hashedPassword) => sendUpdatedPassword(resetCode, hashedPassword))
+      .then(() => setPasswordResetSuccess(true))
       .catch((error) => setErrorMessage(error.message));
   };
 
