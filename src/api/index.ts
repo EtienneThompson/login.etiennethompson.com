@@ -16,7 +16,7 @@ export const loginUser = async (
   const [scrapedUsername, scrapedPassword, scrapedAppid, scrapedRedirectBase] =
     scrapeSqlInjection(username, password, appid, redirectBase);
   // Hash the password for protection.
-  const hashedPassword = hashString(scrapedPassword);
+  const hashedPassword = await hashString(scrapedPassword);
 
   const loginRequest: LoginRequest = {
     username: scrapedUsername,
@@ -26,7 +26,7 @@ export const loginUser = async (
   };
 
   // Send the request to the api.
-  const response = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/login`, {
+  const response = await fetch(`${import.meta.env.VITE_API_ENDPOINT}/login`, {
     headers: {
       "Content-Type": "application/json",
     },
@@ -56,7 +56,7 @@ export const sendResetPasswordEmail = async (
   email: string
 ): Promise<BaseResponse> => {
   const response = await fetch(
-    `${process.env.REACT_APP_API_ENDPOINT}/login/reset/request`,
+    `${import.meta.env.VITE_API_ENDPOINT}/login/reset/request`,
     {
       headers: {
         "Content-Type": "application/json",
@@ -87,7 +87,7 @@ export const sendUpdatedPassword = async (
   newPassword: string
 ): Promise<BaseResponse> => {
   const response = await fetch(
-    `${process.env.REACT_APP_API_ENDPOINT}/login/reset`,
+    `${import.meta.env.VITE_API_ENDPOINT}/login/resettest`,
     {
       headers: {
         "Content-Type": "application/json",
