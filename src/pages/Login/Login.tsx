@@ -1,10 +1,15 @@
 import React from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router";
+import {
+  browserSupportsWebAuthn,
+  browserSupportsWebAuthnAutofill,
+  WebAuthnAbortService,
+} from "@simplewebauthn/browser";
 import { Button } from "../../components/common/Button";
 import { Row, Col } from "../../components/common/Grid";
 import { LoadingSpinner } from "../../components/common/LoadingSpinner";
-import { loginUser } from "../../api";
+import { loginUser, loginWithPasskey } from "../../api";
 import { LoginResponse } from "../../api/types";
 import { LoginStore } from "../../store/types";
 import { LoginStatus } from "../../store/types";
@@ -12,8 +17,10 @@ import queryString from "query-string";
 import "./Login.scss";
 import {
   deleteFromLocalStorage,
+  readFromLocalStorage,
   writeToLocalStorage,
 } from "../../utils/localStorage";
+import { redirectToApplication } from "../../utils/redirect";
 import { LocalStorageKey } from "../../types";
 
 export const Login = () => {
@@ -30,6 +37,7 @@ export const Login = () => {
   const [redirectBase, setRedirectBase] = React.useState("");
 
   const btnRef = React.useRef<any>();
+  const supportsPasskeys = browserSupportsWebAuthn();
 
   // Login system state.
   const isLoggingIn = useSelector((state: LoginStore) => state.isLoggingIn);
@@ -54,11 +62,17 @@ export const Login = () => {
     appid: string,
     redirectBase: string
   ): Promise<void> => {
+    // Offer to add a passkey after logging in, unless the user opted out on
+    // this device.
+    const offerPasskey =
+      supportsPasskeys &&
+      !readFromLocalStorage(LocalStorageKey.PasskeyPromptDismissed);
     const loginResponse: LoginResponse = await loginUser(
       username,
       password,
       appid,
-      redirectBase
+      redirectBase,
+      offerPasskey
     );
 
     if (
@@ -68,22 +82,36 @@ export const Login = () => {
     ) {
       return;
     }
-    const queryChar = loginResponse.redirectUrl.indexOf("?") > -1 ? "&" : "?";
-    // Create the new redirect url.
-    const redirectTo =
-      loginResponse.redirectUrl +
-      queryChar +
-      "clientId=" +
-      loginResponse.clientId +
-      "&isUser=" +
-      loginResponse.isUser +
-      "&isAdmin=" +
-      loginResponse.isAdmin;
-    // Open the link and focus to it.
-    const win = window.open(redirectTo, "_self");
-    if (win) {
-      win.focus();
+
+    if (loginResponse.passkeyRegistration) {
+      navigate("/add_passkey", { state: loginResponse });
+      return;
     }
+
+    redirectToApplication(loginResponse);
+  };
+
+  // Login a user with a passkey and redirect them back to their application.
+  const handlePasskeyLogin = async (
+    appid: string,
+    redirectBase: string,
+    useBrowserAutofill: boolean
+  ): Promise<void> => {
+    const loginResponse = await loginWithPasskey(
+      appid,
+      redirectBase,
+      useBrowserAutofill
+    );
+
+    if (
+      !loginResponse ||
+      !loginResponse.clientId ||
+      !loginResponse.redirectUrl
+    ) {
+      return;
+    }
+
+    redirectToApplication(loginResponse);
   };
 
   const onResetPasswordLinkClicked = () => {
@@ -115,6 +143,16 @@ export const Login = () => {
     // Remove any stored app id for resetting a password.
     deleteFromLocalStorage(LocalStorageKey.CurrentAppId);
     deleteFromLocalStorage(LocalStorageKey.CurrentRedirectBase);
+
+    // Offer saved passkeys when the user focuses the username field.
+    browserSupportsWebAuthnAutofill().then((supportsAutofill) => {
+      if (supportsAutofill) {
+        handlePasskeyLogin(appid, redirectBase, true);
+      }
+    });
+
+    // Stop waiting for a passkey when leaving the page.
+    return () => WebAuthnAbortService.cancelCeremony();
   }, []);
 
   React.useEffect(() => {
@@ -144,6 +182,7 @@ export const Login = () => {
                     <input
                       className="input-text"
                       type="text"
+                      autoComplete="username webauthn"
                       value={username}
                       onChange={onUsernameChange}
                     ></input>
@@ -155,6 +194,7 @@ export const Login = () => {
                     <input
                       className="input-text"
                       type="password"
+                      autoComplete="current-password"
                       value={password}
                       onChange={onPasswordChange}
                     ></input>
@@ -184,6 +224,18 @@ export const Login = () => {
                     Submit
                   </Button>
                 </Row>
+                {supportsPasskeys && (
+                  <Row>
+                    <Button
+                      className="large-button passkey-button"
+                      onClick={async () =>
+                        await handlePasskeyLogin(appid, redirectBase, false)
+                      }
+                    >
+                      Sign in with a passkey
+                    </Button>
+                  </Row>
+                )}
               </div>
             ) : (
               /* Spinner if the system is logging in. */

@@ -10,6 +10,7 @@ import App from "./App";
 import { LandingPage } from "./pages/LandingPage";
 import { EnterEmail } from "./pages/EnterEmail";
 import { ResetPassword } from "./pages/ResetPassword";
+import { AddPasskey } from "./pages/AddPasskey";
 
 ReactDOM.render(
   <Provider store={store}>
@@ -20,6 +21,7 @@ ReactDOM.render(
           <Route path="login" element={<Login />} />
           <Route path="enter_email" element={<EnterEmail />} />
           <Route path="reset_password" element={<ResetPassword />} />
+          <Route path="add_passkey" element={<AddPasskey />} />
           <Route path="*" element={<Error404 />} />
         </Route>
       </Routes>

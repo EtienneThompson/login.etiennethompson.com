@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@reduxjs/toolkit": "^1.6.0",
+    "@simplewebauthn/browser": "^14.0.0",
     "prettier": "^2.3.2",
     "query-string": "^7.0.1",
     "react": "^17.0.2",
