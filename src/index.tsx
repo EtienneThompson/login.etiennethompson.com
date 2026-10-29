@@ -5,6 +5,7 @@ import { Provider } from "react-redux";
 import { Login } from "./pages/Login";
 import { Error404 } from "./pages/404Error";
 import { store } from "./store/store";
+import "@fontsource-variable/inter";
 import "./index.scss";
 import App from "./App";
 import { LandingPage } from "./pages/LandingPage";

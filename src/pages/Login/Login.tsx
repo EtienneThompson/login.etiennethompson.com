@@ -1,58 +1,58 @@
 import React from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
 import {
   browserSupportsWebAuthn,
   browserSupportsWebAuthnAutofill,
   WebAuthnAbortService,
 } from "@simplewebauthn/browser";
+import { Alert } from "../../components/common/Alert";
+import { AuthCard } from "../../components/common/AuthCard";
 import { Button } from "../../components/common/Button";
-import { Row, Col } from "../../components/common/Grid";
-import { LoadingSpinner } from "../../components/common/LoadingSpinner";
+import { KeyIcon } from "../../components/common/Icons";
+import { TextField } from "../../components/common/TextField";
 import { loginUser, loginWithPasskey } from "../../api";
 import { LoginResponse } from "../../api/types";
+import { finishedLogin, updateLoginStatus } from "../../store/actions";
 import { LoginStore } from "../../store/types";
 import { LoginStatus } from "../../store/types";
 import queryString from "query-string";
-import "./Login.scss";
 import {
   deleteFromLocalStorage,
   readFromLocalStorage,
   writeToLocalStorage,
 } from "../../utils/localStorage";
 import { redirectToApplication } from "../../utils/redirect";
+import { useDocumentTitle } from "../../utils/useDocumentTitle";
 import { LocalStorageKey } from "../../types";
 
+type LoginMethod = "password" | "passkey";
+
 export const Login = () => {
-  // Set title and theme.
-  document.title = "Etienne Thompson - OAuth Login - Login";
-  document.documentElement.className = "theme-light";
+  useDocumentTitle("Sign in");
 
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   // User input state.
   const [username, setUsername] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [appid, setAppid] = React.useState("");
   const [redirectBase, setRedirectBase] = React.useState("");
+  // Which button shows the spinner. Passkey autofill counts as a passkey.
+  const [loginMethod, setLoginMethod] = React.useState<LoginMethod>("passkey");
 
-  const btnRef = React.useRef<any>();
   const supportsPasskeys = browserSupportsWebAuthn();
 
   // Login system state.
   const isLoggingIn = useSelector((state: LoginStore) => state.isLoggingIn);
   const loginStatus = useSelector((state: LoginStore) => state.loginStatus);
 
-  // Update the username state.
-  const onUsernameChange = (
-    event: React.FormEvent<HTMLInputElement>
-  ): void => {
-    setUsername(event.currentTarget.value);
-  };
-
-  // Update the password state.
-  const onPasswordChange = (event: React.FormEvent<HTMLInputElement>) => {
-    setPassword(event.currentTarget.value);
+  // Stop showing the spinner if the request itself failed.
+  const onLoginError = (error: unknown) => {
+    console.error("Could not login:", error);
+    dispatch(updateLoginStatus(LoginStatus.Failed));
+    dispatch(finishedLogin());
   };
 
   // Login a user and redirect them back to their application.
@@ -67,13 +67,19 @@ export const Login = () => {
     const offerPasskey =
       supportsPasskeys &&
       !readFromLocalStorage(LocalStorageKey.PasskeyPromptDismissed);
-    const loginResponse: LoginResponse = await loginUser(
-      username,
-      password,
-      appid,
-      redirectBase,
-      offerPasskey
-    );
+    let loginResponse: LoginResponse;
+    try {
+      loginResponse = await loginUser(
+        username,
+        password,
+        appid,
+        redirectBase,
+        offerPasskey
+      );
+    } catch (error) {
+      onLoginError(error);
+      return;
+    }
 
     if (
       !loginResponse ||
@@ -97,11 +103,17 @@ export const Login = () => {
     redirectBase: string,
     useBrowserAutofill: boolean
   ): Promise<void> => {
-    const loginResponse = await loginWithPasskey(
-      appid,
-      redirectBase,
-      useBrowserAutofill
-    );
+    let loginResponse: LoginResponse | null;
+    try {
+      loginResponse = await loginWithPasskey(
+        appid,
+        redirectBase,
+        useBrowserAutofill
+      );
+    } catch (error) {
+      onLoginError(error);
+      return;
+    }
 
     if (
       !loginResponse ||
@@ -112,6 +124,17 @@ export const Login = () => {
     }
 
     redirectToApplication(loginResponse);
+  };
+
+  const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setLoginMethod("password");
+    await handleLogin(username, password, appid, redirectBase);
+  };
+
+  const onPasskeyButtonClicked = async () => {
+    setLoginMethod("passkey");
+    await handlePasskeyLogin(appid, redirectBase, false);
   };
 
   const onResetPasswordLinkClicked = () => {
@@ -155,97 +178,79 @@ export const Login = () => {
     return () => WebAuthnAbortService.cancelCeremony();
   }, []);
 
-  React.useEffect(() => {
-    if (btnRef && btnRef.current) {
-      btnRef.current.focus();
-    }
-  }, [btnRef]);
-
   return (
-    <div className="App">
-      <Row>
-        <Col>
-          <div className="card">
-            {!isLoggingIn ? (
-              /* Login form if the system is not logging in.*/
-              <div>
-                <Row>
-                  <h1>Login</h1>
-                </Row>
-                {loginStatus === LoginStatus.Failed && (
-                  /* Error component if login was unsucessful. */
-                  <div className="error">Could not login.</div>
-                )}
-                <Row>
-                  <Col align="start">
-                    <div className="input-label">Username</div>
-                    <input
-                      className="input-text"
-                      type="text"
-                      autoComplete="username webauthn"
-                      value={username}
-                      onChange={onUsernameChange}
-                    ></input>
-                  </Col>
-                </Row>
-                <Row>
-                  <Col align="start">
-                    <div className="input-label">Password</div>
-                    <input
-                      className="input-text"
-                      type="password"
-                      autoComplete="current-password"
-                      value={password}
-                      onChange={onPasswordChange}
-                    ></input>
-                  </Col>
-                </Row>
-                <Row justify="end">
-                  <div
-                    onClick={onResetPasswordLinkClicked}
-                    className="forgot-password-link"
-                  >
-                    Forgot your password?
-                  </div>
-                </Row>
-                <Row>
-                  <Button
-                    className="large-button"
-                    ref={btnRef}
-                    onClick={async () =>
-                      await handleLogin(
-                        username,
-                        password,
-                        appid,
-                        redirectBase
-                      )
-                    }
-                  >
-                    Submit
-                  </Button>
-                </Row>
-                {supportsPasskeys && (
-                  <Row>
-                    <Button
-                      className="large-button passkey-button"
-                      onClick={async () =>
-                        await handlePasskeyLogin(appid, redirectBase, false)
-                      }
-                    >
-                      Sign in with a passkey
-                    </Button>
-                  </Row>
-                )}
-              </div>
-            ) : (
-              /* Spinner if the system is logging in. */
-              <div>
-                <LoadingSpinner />
-              </div>
-            )}
-          </div>
-        </Col>
-      </Row>
-    </div>
+    <AuthCard
+      title="Welcome back"
+      description="Sign in with your Etienne Thompson account."
+    >
+      {loginStatus === LoginStatus.Failed && !isLoggingIn && (
+        <Alert>
+          We couldn't sign you in. Check your username and password, and make
+          sure you have access to this app.
+        </Alert>
+      )}
+      <form className="auth-form" onSubmit={onSubmit}>
+        <TextField
+          id="username"
+          label="Username"
+          autoComplete="username webauthn"
+          autoCapitalize="none"
+          spellCheck={false}
+          autoFocus
+          required
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          disabled={isLoggingIn}
+        />
+        <TextField
+          id="password"
+          label="Password"
+          type="password"
+          autoComplete="current-password"
+          required
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          disabled={isLoggingIn}
+          labelAction={
+            <Button
+              variant="link"
+              onClick={onResetPasswordLinkClicked}
+              disabled={isLoggingIn}
+            >
+              Forgot password?
+            </Button>
+          }
+        />
+        <div className="auth-form-actions">
+          <Button
+            type="submit"
+            fullWidth
+            isLoading={isLoggingIn && loginMethod === "password"}
+            disabled={isLoggingIn}
+          >
+            {isLoggingIn && loginMethod === "password"
+              ? "Signing in…"
+              : "Sign in"}
+          </Button>
+        </div>
+      </form>
+      {supportsPasskeys && (
+        <>
+          <div className="auth-divider">or</div>
+          <Button
+            variant="secondary"
+            fullWidth
+            icon={<KeyIcon />}
+            isLoading={isLoggingIn && loginMethod === "passkey"}
+            disabled={isLoggingIn}
+            onClick={onPasskeyButtonClicked}
+          >
+            {isLoggingIn && loginMethod === "passkey"
+              ? "Signing in…"
+              : "Sign in with a passkey"}
+          </Button>
+        </>
+      )}
+    </AuthCard>
   );
 };

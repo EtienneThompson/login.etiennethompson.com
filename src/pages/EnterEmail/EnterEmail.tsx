@@ -1,70 +1,105 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { sendResetPasswordEmail } from "../../api";
-import { Button } from "../../components/common/Button";
-import { Row, Col, Container } from "../../components/common/Grid";
-import "./EnterEmail.scss";
+import { Alert } from "../../components/common/Alert";
+import { AuthCard } from "../../components/common/AuthCard";
+import { Button, buttonClassName } from "../../components/common/Button";
+import {
+  ArrowLeftIcon,
+  LockIcon,
+  MailIcon,
+} from "../../components/common/Icons";
+import { TextField } from "../../components/common/TextField";
+import { getStoredLoginPath } from "../../utils/loginPath";
+import { useDocumentTitle } from "../../utils/useDocumentTitle";
 
 export const EnterEmail = () => {
-  document.title = "Etienne Thompson - OAuth Login - Enter Email";
-  document.documentElement.className = "theme-light";
+  useDocumentTitle("Reset password");
 
   const [emailAddress, setEmailAddress] = React.useState("");
   const [emailSubmitted, setEmailSubmitted] = React.useState(false);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState("");
 
-  const onSubmitButtonClicked = () => {
-    sendResetPasswordEmail(emailAddress)
-      .then((response) => {
+  const loginPath = getStoredLoginPath();
+  const backToLogin = loginPath && (
+    <Link to={loginPath} className={buttonClassName("link")}>
+      <ArrowLeftIcon />
+      Back to sign in
+    </Link>
+  );
+
+  const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setErrorMessage("");
+    setIsSubmitting(true);
+    sendResetPasswordEmail(emailAddress.trim())
+      .then(() => {
         setEmailSubmitted(true);
       })
       .catch((error) => {
-        setErrorMessage(error.message);
-      });
+        setErrorMessage(
+          error.message || "We couldn't send the email. Please try again."
+        );
+      })
+      .finally(() => setIsSubmitting(false));
   };
 
+  if (emailSubmitted) {
+    return (
+      <AuthCard
+        icon={<MailIcon />}
+        title="Check your email"
+        description={
+          <>
+            We sent a password reset link to <strong>{emailAddress}</strong>.
+            The link is valid for 15 minutes.
+          </>
+        }
+        footer={backToLogin}
+      >
+        <p className="auth-card-description" style={{ textAlign: "center" }}>
+          Don't see it? Check your spam folder, or reach out if it doesn't
+          arrive.
+        </p>
+        <Button
+          variant="secondary"
+          fullWidth
+          onClick={() => setEmailSubmitted(false)}
+        >
+          Try a different email
+        </Button>
+      </AuthCard>
+    );
+  }
+
   return (
-    <Container className="enter-email-container">
-      <div className="card">
-        {!emailSubmitted ? (
-          <Col>
-            {errorMessage && (
-              <Row>
-                <div className="error">{errorMessage}</div>
-              </Row>
-            )}
-            <Row className="reset-notice-title">
-              You've requested to reset your password. Enter the email
-              associated with your account.
-            </Row>
-            <Row>
-              <Col align="start">
-                <div className="input-label">Enter your email:</div>
-                <input
-                  className="input-text"
-                  type="text"
-                  onChange={(e) => setEmailAddress(e.target.value)}
-                />
-              </Col>
-            </Row>
-            <Row>
-              <Button onClick={onSubmitButtonClicked}>Submit</Button>
-            </Row>
-          </Col>
-        ) : (
-          <Col>
-            <Row className="reset-notice-title">
-              An email has been sent to {emailAddress}
-            </Row>
-            <Row className="reset-notice-subtitle">
-              The email will be valid for 15 minutes with the link to reset
-              your password.
-            </Row>
-            <Row className="reset-notice-subtitle">
-              If you don't receive the email, please try again or reach out.
-            </Row>
-          </Col>
-        )}
-      </div>
-    </Container>
+    <AuthCard
+      icon={<LockIcon />}
+      title="Forgot your password?"
+      description="Enter the email on your account and we'll send you a link to reset it."
+      footer={backToLogin}
+    >
+      {errorMessage && <Alert>{errorMessage}</Alert>}
+      <form className="auth-form" onSubmit={onSubmit}>
+        <TextField
+          id="email"
+          label="Email"
+          type="email"
+          autoComplete="email"
+          placeholder="you@example.com"
+          autoFocus
+          required
+          value={emailAddress}
+          onChange={(e) => setEmailAddress(e.target.value)}
+          disabled={isSubmitting}
+        />
+        <div className="auth-form-actions">
+          <Button type="submit" fullWidth isLoading={isSubmitting}>
+            {isSubmitting ? "Sending…" : "Send reset link"}
+          </Button>
+        </div>
+      </form>
+    </AuthCard>
   );
 };

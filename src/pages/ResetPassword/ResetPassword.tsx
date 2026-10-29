@@ -1,147 +1,138 @@
 import React from "react";
-import { useNavigate } from "react-router";
+import { Link } from "react-router-dom";
 import queryString from "query-string";
 import { sendUpdatedPassword } from "../../api";
-import { Button } from "../../components/common/Button";
-import { Row, Col, Container } from "../../components/common/Grid";
+import { Alert } from "../../components/common/Alert";
+import { AuthCard } from "../../components/common/AuthCard";
+import { Button, buttonClassName } from "../../components/common/Button";
+import {
+  AlertIcon,
+  CheckIcon,
+  LockIcon,
+} from "../../components/common/Icons";
+import { TextField } from "../../components/common/TextField";
 import { hashString } from "../../utils/hash";
-import { readFromLocalStorage } from "../../utils/localStorage";
-import { LocalStorageKey } from "../../types";
-import "./ResetPassword.scss";
+import { getStoredLoginPath } from "../../utils/loginPath";
+import { useDocumentTitle } from "../../utils/useDocumentTitle";
+
+// Read the reset code from the link in the email.
+const getResetCode = (): string => {
+  const params = queryString.parse(window.location.search.substring(1));
+  const code = Array.isArray(params.code) ? params.code[0] : params.code;
+  return code || "";
+};
 
 export const ResetPassword = () => {
-  document.title = "Etienne Thompson - OAuth Login - Reset Password";
-  document.documentElement.className = "theme-light";
+  useDocumentTitle("Choose a new password");
 
-  const navigate = useNavigate();
-
-  const [appId, setAppId] = React.useState("");
-  const [redirectUrl, setRedirectUrl] = React.useState("");
-  const [resetCode, setResetCode] = React.useState("");
+  const [resetCode] = React.useState(getResetCode);
   const [newPassword, setNewPassword] = React.useState("");
   const [newConfirm, setNewConfirm] = React.useState("");
   const [passwordResetSuccess, setPasswordResetSuccess] =
     React.useState(false);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState("");
 
-  React.useEffect(() => {
-    let params = queryString.parse(window.location.search.substring(1));
-    let code = params.code
-      ? Array.isArray(params.code)
-        ? params.code[0]
-          ? params.code[0]
-          : ""
-        : params.code
-      : "";
+  const passwordsMatch = newPassword === newConfirm;
 
-    if (!code) {
-      setErrorMessage("You must have a reset code to reset your password");
+  const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!passwordsMatch) {
+      setErrorMessage("Your passwords don't match.");
       return;
     }
 
-    setResetCode(code);
-  }, []);
-
-  React.useEffect(() => {
-    if (!passwordResetSuccess) {
-      return;
-    }
-
-    const appId = readFromLocalStorage(LocalStorageKey.CurrentAppId);
-    const redirectUrl = readFromLocalStorage(
-      LocalStorageKey.CurrentRedirectBase
-    );
-    if (appId && redirectUrl) {
-      setAppId(appId);
-      setRedirectUrl(redirectUrl);
-    }
-  }, [passwordResetSuccess]);
-
-  const onPasswordChange = (event: any) => {
-    setNewPassword(event.target.value);
-  };
-
-  const onConfirmChange = (event: any) => {
-    setNewConfirm(event.target.value);
-  };
-
-  const onSubmitButtonClicked = () => {
-    if (newPassword !== newConfirm) {
-      setErrorMessage("Your passwords are not the same!");
-      return;
-    }
-
+    setErrorMessage("");
+    setIsSubmitting(true);
     hashString(newPassword)
       .then((hashedPassword) => sendUpdatedPassword(resetCode, hashedPassword))
       .then(() => setPasswordResetSuccess(true))
-      .catch((error) => setErrorMessage(error.message));
+      .catch((error) =>
+        setErrorMessage(
+          error.message || "We couldn't reset your password. Please try again."
+        )
+      )
+      .finally(() => setIsSubmitting(false));
   };
 
-  return (
-    <Container className="reset-password-container">
-      <div className="card">
-        {!passwordResetSuccess ? (
-          <Col>
-            {errorMessage && (
-              <Row>
-                <div className="error">{errorMessage}</div>
-              </Row>
-            )}
-            <Row className="reset-notice-message">
-              Enter a new password for your account.
-            </Row>
-            <Row>
-              <Col align="start">
-                <div className="input-label">New Password:</div>
-                <input
-                  className="input-text"
-                  type="password"
-                  value={newPassword}
-                  onChange={onPasswordChange}
-                />
-              </Col>
-            </Row>
-            <Row>
-              <Col align="start">
-                <div className="input-label">Confirm New Password:</div>
-                <input
-                  className={`input-text ${
-                    newPassword === newConfirm ? "" : "not-same"
-                  }`}
-                  type="password"
-                  value={newConfirm}
-                  onChange={onConfirmChange}
-                />
-              </Col>
-            </Row>
-            <Row>
-              <Button onClick={onSubmitButtonClicked}>Submit</Button>
-            </Row>
-          </Col>
-        ) : (
-          <Col>
-            <Row>
-              <div className="reset-notice-message">
-                Your password was reset successfully.
-              </div>
-            </Row>
-            {appId && redirectUrl && (
-              <Row>
-                <div
-                  className="return-link"
-                  onClick={() =>
-                    navigate(
-                      `/login?appid=${appId}&redirectBase=${redirectUrl}`
-                    )
-                  }
-                >
-                  Return to login
-                </div>
-              </Row>
-            )}
-          </Col>
+  if (!resetCode) {
+    return (
+      <AuthCard
+        icon={<AlertIcon />}
+        iconVariant="danger"
+        title="This link isn't valid"
+        description="You need the link from a password reset email to choose a new password. Request a new one to continue."
+      >
+        <Link to="/enter_email" className={buttonClassName("primary", true)}>
+          Request a new link
+        </Link>
+      </AuthCard>
+    );
+  }
+
+  if (passwordResetSuccess) {
+    const loginPath = getStoredLoginPath();
+    return (
+      <AuthCard
+        icon={<CheckIcon />}
+        iconVariant="success"
+        title="Password updated"
+        description="Your password was reset successfully. You can now sign in with your new password."
+      >
+        {loginPath && (
+          <Link to={loginPath} className={buttonClassName("primary", true)}>
+            Return to sign in
+          </Link>
         )}
-      </div>
-    </Container>
+      </AuthCard>
+    );
+  }
+
+  return (
+    <AuthCard
+      icon={<LockIcon />}
+      title="Choose a new password"
+      description="Enter a new password for your account."
+    >
+      {errorMessage && <Alert>{errorMessage}</Alert>}
+      <form className="auth-form" onSubmit={onSubmit}>
+        <TextField
+          id="new-password"
+          label="New password"
+          type="password"
+          autoComplete="new-password"
+          autoFocus
+          required
+          value={newPassword}
+          onChange={(e) => setNewPassword(e.target.value)}
+          disabled={isSubmitting}
+        />
+        <TextField
+          id="confirm-password"
+          label="Confirm new password"
+          type="password"
+          autoComplete="new-password"
+          required
+          value={newConfirm}
+          onChange={(e) => setNewConfirm(e.target.value)}
+          disabled={isSubmitting}
+          error={
+            newConfirm && !passwordsMatch
+              ? "Passwords don't match."
+              : undefined
+          }
+        />
+        <div className="auth-form-actions">
+          <Button
+            type="submit"
+            fullWidth
+            isLoading={isSubmitting}
+            disabled={!newPassword || !passwordsMatch}
+          >
+            {isSubmitting ? "Updating…" : "Update password"}
+          </Button>
+        </div>
+      </form>
+    </AuthCard>
   );
 };
