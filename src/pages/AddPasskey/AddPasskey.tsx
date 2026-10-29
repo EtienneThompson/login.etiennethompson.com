@@ -3,16 +3,17 @@ import { useLocation } from "react-router";
 import { WebAuthnError } from "@simplewebauthn/browser";
 import { registerPasskey } from "../../api";
 import { LoginResponse } from "../../api/types";
+import { Alert } from "../../components/common/Alert";
+import { AuthCard } from "../../components/common/AuthCard";
 import { Button } from "../../components/common/Button";
-import { Row, Col, Container } from "../../components/common/Grid";
+import { KeyIcon, LockIcon } from "../../components/common/Icons";
 import { writeToLocalStorage } from "../../utils/localStorage";
 import { redirectToApplication } from "../../utils/redirect";
+import { useDocumentTitle } from "../../utils/useDocumentTitle";
 import { LocalStorageKey } from "../../types";
-import "./AddPasskey.scss";
 
 export const AddPasskey = () => {
-  document.title = "Etienne Thompson - OAuth Login - Add a Passkey";
-  document.documentElement.className = "theme-light";
+  useDocumentTitle("Add a passkey");
 
   // The login page passes the login response here after a password login.
   const location = useLocation();
@@ -43,7 +44,7 @@ export const AddPasskey = () => {
         return;
       }
       if (error instanceof Error && error.name === "NotAllowedError") {
-        setErrorMessage("The passkey wasn't added.");
+        setErrorMessage("The passkey wasn't added. You can try again.");
         return;
       }
       setErrorMessage(error.message || "Could not add the passkey.");
@@ -66,62 +67,56 @@ export const AddPasskey = () => {
     onNotNowClicked();
   };
 
+  if (!loginResponse || !loginResponse.passkeyRegistration) {
+    return (
+      <AuthCard
+        icon={<LockIcon />}
+        title="Sign in first"
+        description="Sign in to an app with your password to add a passkey to your account."
+      />
+    );
+  }
+
   return (
-    <Container className="add-passkey-container">
-      <div className="card">
-        {loginResponse && loginResponse.passkeyRegistration ? (
-          <Col>
-            {errorMessage && (
-              <Row>
-                <div className="error">{errorMessage}</div>
-              </Row>
-            )}
-            {isWaitingForPasskey && (
-              <Row className="add-passkey-subtitle">
-                Follow the prompt from your browser or device to create your
-                passkey.
-              </Row>
-            )}
-            <Row className="add-passkey-title">
-              Skip the password next time?
-            </Row>
-            <Row className="add-passkey-subtitle">
-              Add a passkey to sign in with your fingerprint, face, or device
-              PIN instead of your password.
-            </Row>
-            <Row>
-              <Button
-                className="large-button add-passkey-button"
-                onClick={onAddPasskeyClicked}
-              >
-                Add a passkey
-              </Button>
-            </Row>
-            <Row>
-              <Button
-                className="large-button add-passkey-button"
-                onClick={onNotNowClicked}
-              >
-                Not now
-              </Button>
-            </Row>
-            <Row>
-              <div
-                className="add-passkey-link"
-                onClick={onDontAskAgainClicked}
-              >
-                Don't ask again on this device
-              </div>
-            </Row>
-          </Col>
-        ) : (
-          <Col>
-            <Row className="add-passkey-title">
-              Login to add a passkey to your account.
-            </Row>
-          </Col>
-        )}
+    <AuthCard
+      icon={<KeyIcon />}
+      title="Skip the password next time?"
+      description="Add a passkey to sign in with your fingerprint, face, or device PIN instead of your password."
+      footer={
+        <Button
+          variant="link"
+          onClick={onDontAskAgainClicked}
+          disabled={isWaitingForPasskey}
+        >
+          Don't ask again on this device
+        </Button>
+      }
+    >
+      {errorMessage && <Alert>{errorMessage}</Alert>}
+      {isWaitingForPasskey && (
+        <Alert variant="info">
+          Follow the prompt from your browser or device to create your
+          passkey.
+        </Alert>
+      )}
+      <div className="auth-form-actions">
+        <Button
+          fullWidth
+          icon={<KeyIcon />}
+          isLoading={isWaitingForPasskey}
+          onClick={onAddPasskeyClicked}
+        >
+          {isWaitingForPasskey ? "Waiting for your device…" : "Add a passkey"}
+        </Button>
+        <Button
+          variant="secondary"
+          fullWidth
+          onClick={onNotNowClicked}
+          disabled={isWaitingForPasskey}
+        >
+          Not now
+        </Button>
       </div>
-    </Container>
+    </AuthCard>
   );
 };

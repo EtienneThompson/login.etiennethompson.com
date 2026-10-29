@@ -1,22 +1,45 @@
 import React from "react";
-import { ButtonProps } from "./Button.types";
-import { Keyboard } from "../../../types";
+import { ButtonProps, ButtonVariant } from "./Button.types";
+import { LoadingSpinner } from "../LoadingSpinner";
 import "./Button.scss";
 
-export const Button = React.forwardRef<HTMLDivElement, ButtonProps>(
-  (props: ButtonProps, ref: any) => {
+// Class names for anything that should look like a button, such as links.
+export const buttonClassName = (
+  variant: ButtonVariant = "primary",
+  fullWidth = false,
+  className = ""
+): string =>
+  ["button", `button--${variant}`, fullWidth ? "button--full" : "", className]
+    .filter(Boolean)
+    .join(" ");
+
+export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  (
+    {
+      variant = "primary",
+      fullWidth = false,
+      isLoading = false,
+      icon,
+      className,
+      disabled,
+      type = "button",
+      children,
+      ...rest
+    },
+    ref
+  ) => {
     return (
-      <div
-        tabIndex={0}
-        className={`button-container ${props.className}`}
+      <button
         ref={ref}
-        onClick={props.onClick}
-        onKeyDown={(e) =>
-          e.key === Keyboard.Enter ? props.onClick && props.onClick() : null
-        }
+        type={type}
+        className={buttonClassName(variant, fullWidth, className)}
+        disabled={disabled || isLoading}
+        aria-busy={isLoading || undefined}
+        {...rest}
       >
-        {props.children}
-      </div>
+        {isLoading ? <LoadingSpinner /> : icon}
+        {children}
+      </button>
     );
   }
 );
